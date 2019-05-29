@@ -165,6 +165,21 @@ class ConfusionMatrix(object):
             return 0
         return (beta*beta + 1) * p * r / d
 
+    def get_mcc(self):
+        """ Get binary class MCC,
+
+        :return: (``float``) Matthew Correlation Coefficient
+        """
+        s = (self._cm.sum(axis=1)[0]) / self._cm.sum()
+        p = (self._cm.sum(axis=0)[0]) / self._cm.sum()
+
+        mcc = ((self._cm[0, 0] / self._cm.sum()) - (s * p)) / (np.sqrt(p * s * (1 - p) * (1 - s)))
+
+        if np.isnan(mcc):
+            return 0
+        else:
+            return mcc
+
     def get_all_metrics(self):
         """Make a map of metrics suitable for reporting, keyed by metric name
 
@@ -176,6 +191,7 @@ class ConfusionMatrix(object):
             metrics['precision'] = self.get_precision()[1]
             metrics['recall'] = self.get_recall()[1]
             metrics['f1'] = self.get_f(1)
+            metrics['mcc'] = self.get_mcc()
         else:
             metrics['mean_precision'] = self.get_mean_precision()
             metrics['mean_recall'] = self.get_mean_recall()
