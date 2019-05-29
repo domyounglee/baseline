@@ -8,6 +8,13 @@
     "label": "ptb"
   },
   {
+    "train_file": "in_domain_train.txt",
+    "valid_file": "in_domain_dev.txt",
+    "test_file": "out_of_domain_dev.txt",
+    "download": "https://www.dropbox.com/s/472lcxdyqgs72pg/tokenizedCoLA.tar.gz?dl=1",
+    "label": "CoLA"
+  },
+  {
     "train_file": "train.txt",
     "valid_file": "valid.txt",
     "test_file": "test.txt",
