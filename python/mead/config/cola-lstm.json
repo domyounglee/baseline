@@ -1,0 +1,40 @@
+{
+    "task": "classify",
+    "batchsz": 32,
+    "basedir": "./cola-lstm",
+    "features": [
+	{
+	    "name": "word2",
+	    "vectorizer": { "type": "token1d" },
+	    "embeddings": { "label": "glove-840B" }
+	},
+	{
+	    "name": "word",
+	    "vectorizer": { "type": "token1d" },
+	    "embeddings": { "label": "w2v-gn" }
+	}		 
+    ],
+    "preproc": {
+	"mxlen": 100,
+	"clean": true
+    },
+    "backend": "tensorflow",
+    "dataset": "CoLA",
+    "loader": {
+	"reader_type": "default"
+    },
+    "unif": 0.25,
+    "model": {
+	"model_type": "lstm",
+	"hsz": 100,
+	"dropout": 0.5,
+	"finetune": false
+    },
+    "train": {
+	"epochs": 10,
+	"optim": "adamw",
+	"eta": 0.0008,
+        "weight_decay": 1.0e-5,
+	"early_stopping_metric": "mcc"
+    }
+}
