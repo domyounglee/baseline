@@ -14,6 +14,15 @@
     "download": "https://www.dropbox.com/s/472lcxdyqgs72pg/tokenizedCoLA.tar.gz?dl=1",
     "label": "CoLA"
   },
+
+  {
+    "train_file": "train.txt",
+    "valid_file": "test.txt",
+    "test_file": "test.txt",
+    "download": "https://www.dropbox.com/s/werdknh76k679az/Yelp-polarity.tar.gz?dl=1",
+    "label": "Yelp-polarity"
+  },
+
   {
     "train_file": "train.txt",
     "valid_file": "valid.txt",
