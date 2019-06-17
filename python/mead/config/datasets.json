@@ -27,7 +27,7 @@
     "train_file": "train.txt",
     "valid_file": "test.txt",
     "test_file": "test.txt",
-    "download": "https://www.dropbox.com/s/werdknh76k679az/Yelp-polarity.tar.gz?dl=1",
+    "download": "https://www.dropbox.com/s/nwrdmbkj93qmokw/Yelp_review.tar.gz?dl=1",
     "label": "Yelp-review"
   },
 
