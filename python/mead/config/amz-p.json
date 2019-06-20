@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "task": "classify",
+  "basedir": "./amz-p",
+  "batchsz": 112,
+  "features": [
+    {
+      "name": "word",
+      "vectorizer": {
+        "type": "token1d",
+	"transform": "baseline.lowercase"
+      },
+      "embeddings": {
+        "label": "w2v-gn"
+      }
+    }
+  ],
+  "preproc": {
+    "rev": false,
+    "clean": true
+  },
+  "backend": "tensorflow",
+  "dataset": "amz-polarity",
+  "reader": {
+    "type": "default"
+  },
+  "unif": 0.25,
+  "model": {
+    "type": "default",
+    "filtsz": [
+      3,
+      4,
+      5,
+      7
+    ],
+    "cmotsz": 400,
+    "dropout": 0.5,
+    "finetune": true
+  },
+  "train": {
+    "epochs": 5,
+    "optim": "adam",
+    "eta": 0.00005,
+    "model_zip": true,
+    "early_stopping_metric": "acc",
+    "nsteps": 200,
+    "verbose": {
+      "console": true,
+      "file": "amz-p-cm.csv"
+    }
+  }
+}
