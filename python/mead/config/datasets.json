@@ -19,6 +19,22 @@
     "train_file": "train.txt",
     "valid_file": "test.txt",
     "test_file": "test.txt",
+    "download": "https://www.dropbox.com/s/vcjz5ltc1rzql7n/amz-polartity.tar.gz?dl=1",
+    "label": "amz-polarity"
+  },
+
+  {
+    "train_file": "train.txt",
+    "valid_file": "test.txt",
+    "test_file": "test.txt",
+    "download": "https://www.dropbox.com/s/mknvoycxg2eg1vt/amz-review.tar.gz?dl=1",
+    "label": "amz-review"
+  },
+
+  {
+    "train_file": "train.txt",
+    "valid_file": "test.txt",
+    "test_file": "test.txt",
     "download": "https://www.dropbox.com/s/werdknh76k679az/Yelp-polarity.tar.gz?dl=1",
     "label": "Yelp-polarity"
   },

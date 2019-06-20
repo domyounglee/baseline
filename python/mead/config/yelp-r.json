@@ -45,6 +45,7 @@
     "eta": 0.00005,
     "model_zip": true,
     "early_stopping_metric": "acc",
+    "nsteps": 200,
     "verbose": {
       "console": true,
       "file": "yelp-r-cm.csv"

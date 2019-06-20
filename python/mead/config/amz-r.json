@@ -28,8 +28,6 @@
   "model": {
     "type": "default",
     "filtsz": [
-      1,
-      2,
       3,
       4,
       5,
@@ -45,6 +43,7 @@
     "eta": 0.00005,
     "model_zip": true,
     "early_stopping_metric": "acc",
+    "nsteps": 200,
     "verbose": {
       "console": true,
       "file": "amz-r-cm.csv"
