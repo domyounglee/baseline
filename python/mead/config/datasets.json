@@ -12,7 +12,7 @@
     "valid_file": "in_domain_dev.txt",
     "test_file": "out_of_domain_dev.txt",
     "download": "https://www.dropbox.com/s/472lcxdyqgs72pg/tokenizedCoLA.tar.gz?dl=1",
-    "label": "CoLA"
+    "label": "cola-tok"
   },
 
   {

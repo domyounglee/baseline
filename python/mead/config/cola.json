@@ -20,7 +20,7 @@
     "clean": true
   },
   "backend": "tensorflow",
-  "dataset": "CoLA",
+  "dataset": "cola-tok",
   "reader": {
     "type": "default"
   },
