@@ -32,19 +32,19 @@
   },
 
   {
-    "train_file": "train.txt",
-    "valid_file": "test.txt",
-    "test_file": "test.txt",
-    "download": "https://www.dropbox.com/s/werdknh76k679az/Yelp-polarity.tar.gz?dl=1",
-    "label": "Yelp-polarity"
+    "train_file": "yelp-p-train.txt",
+    "valid_file": "yelp-p-valid.txt",
+    "test_file": "yelp-p-test.txt",
+    "download": "https://www.dropbox.com/s/mg0x3xrkd349984/yelp-polarity.tar.gz?dl=1",
+    "label": "yelp-polarity"
   },
 
   {
-    "train_file": "train.txt",
-    "valid_file": "test.txt",
-    "test_file": "test.txt",
-    "download": "https://www.dropbox.com/s/nwrdmbkj93qmokw/Yelp_review.tar.gz?dl=1",
-    "label": "Yelp-review"
+    "train_file": "yelp-f-train.txt",
+    "valid_file": "yelp-f-valid.txt",
+    "test_file": "yelp-f-test.txt",
+    "download": "https://www.dropbox.com/s/96b72vdu4hnrjwq/yelp_full.tar.gz?dl=1",
+    "label": "yelp-full"
   },
 
   {

@@ -20,7 +20,7 @@
     "clean": true
   },
   "backend": "tensorflow",
-  "dataset": "Yelp-review",
+  "dataset": "yelp-full",
   "reader": {
     "type": "default"
   },
