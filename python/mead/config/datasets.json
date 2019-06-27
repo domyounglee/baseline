@@ -8,6 +8,46 @@
     "label": "ptb"
   },
   {
+    "train_file": "in_domain_train.txt",
+    "valid_file": "in_domain_dev.txt",
+    "test_file": "out_of_domain_dev.txt",
+    "download": "https://www.dropbox.com/s/472lcxdyqgs72pg/tokenizedCoLA.tar.gz?dl=1",
+    "label": "cola-tok"
+  },
+
+  {
+    "train_file": "train.txt",
+    "valid_file": "test.txt",
+    "test_file": "test.txt",
+    "download": "https://www.dropbox.com/s/vcjz5ltc1rzql7n/amz-polartity.tar.gz?dl=1",
+    "label": "amz-polarity"
+  },
+
+  {
+    "train_file": "train.txt",
+    "valid_file": "test.txt",
+    "test_file": "test.txt",
+    "download": "https://www.dropbox.com/s/mknvoycxg2eg1vt/amz-review.tar.gz?dl=1",
+    "label": "amz-review"
+  },
+
+  {
+    "train_file": "train.txt",
+    "valid_file": "test.txt",
+    "test_file": "test.txt",
+    "download": "https://www.dropbox.com/s/werdknh76k679az/Yelp-polarity.tar.gz?dl=1",
+    "label": "Yelp-polarity"
+  },
+
+  {
+    "train_file": "train.txt",
+    "valid_file": "test.txt",
+    "test_file": "test.txt",
+    "download": "https://www.dropbox.com/s/nwrdmbkj93qmokw/Yelp_review.tar.gz?dl=1",
+    "label": "Yelp-review"
+  },
+
+  {
     "train_file": "train.txt",
     "valid_file": "valid.txt",
     "test_file": "test.txt",

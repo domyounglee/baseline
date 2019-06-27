@@ -1,0 +1,50 @@
+{
+  "version": 2,
+  "task": "classify",
+  "basedir": "./cola",
+  "batchsz": 32,
+  "features": [
+    {
+      "name": "word",
+      "vectorizer": {
+        "type": "token1d",
+	"transform": "baseline.lowercase"
+      },
+      "embeddings": {
+        "label": "w2v-gn"
+      }
+    }
+  ],
+  "preproc": {
+    "rev": false,
+    "clean": true
+  },
+  "backend": "tensorflow",
+  "dataset": "cola-tok",
+  "reader": {
+    "type": "default"
+  },
+  "unif": 0.25,
+  "model": {
+    "type": "default",
+    "filtsz": [
+      3,
+      4,
+      5
+    ],
+    "cmotsz": 100,
+    "dropout": 0.5,
+    "finetune": true
+  },
+  "train": {
+    "epochs": 5,
+    "optim": "adam",
+    "eta": 0.00005,
+    "model_zip": true,
+    "early_stopping_metric": "acc",
+    "verbose": {
+      "console": true,
+      "file": "cola-cm.csv"
+    }
+  }
+}
