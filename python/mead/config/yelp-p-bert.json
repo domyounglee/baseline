@@ -1,0 +1,63 @@
+{
+  "version": 2,
+  "task": "classify",
+  "basedir": "./yelp-p",
+  "batchsz": 112,
+    "modules": ["embed_bert"],
+    "features":
+    [
+	{
+	    "name": "bert",
+	    "vectorizer": {
+		"type": "wordpiece1d",
+		"vocab_file": "/data/bert/uncased_L-12_H-768_A-12/vocab.txt"
+	    },
+	    "embeddings": {
+		"type": "bert",
+		"dsz": 3072,
+		"vocab_file": "/data/bert/uncased_L-12_H-768_A-12/vocab.txt",
+		"bert_config": "/data/bert/uncased_L-12_H-768_A-12/bert_config.json",
+		"embed_file": "/data/bert/uncased_L-12_H-768_A-12/bert_model.ckpt",
+                "operator": "concat",
+                "layers": [-1,-2, -3, -4]
+	    }
+	}
+    ],
+  "preproc": {
+    "rev": false,
+    "clean": true,
+    "min_f": 2,
+    "trim":true
+  },
+  "backend": "tensorflow",
+  "dataset": "yelp-polarity",
+  "reader": {
+    "type": "default"
+  },
+  "unif": 0.25,
+  "model": {
+    "type": "default",
+    "filtsz": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      7
+    ],
+    "cmotsz": 400,
+    "dropout": 0.5,
+    "finetune": true
+  },
+  "train": {
+    "epochs": 5,
+    "optim": "adam",
+    "eta": 0.00005,
+    "model_zip": true,
+    "early_stopping_metric": "acc",
+    "verbose": {
+      "console": true,
+      "file": "yelp-p-cm.csv"
+    }
+  }
+}
