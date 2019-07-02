@@ -25,9 +25,7 @@
     ],
   "preproc": {
     "rev": false,
-    "clean": true,
-    "min_f": 2,
-    "trim":true
+    "clean": false
   },
   "backend": "tensorflow",
   "dataset": "yelp-full",

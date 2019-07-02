@@ -20,7 +20,7 @@
     "clean": true
   },
   "backend": "tensorflow",
-  "dataset": "amz-review",
+  "dataset": "amz-full",
   "reader": {
     "type": "default"
   },
@@ -38,7 +38,7 @@
     "finetune": true
   },
   "train": {
-    "epochs": 5,
+    "epochs": 10,
     "optim": "adam",
     "eta": 0.00005,
     "model_zip": true,

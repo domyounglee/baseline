@@ -17,7 +17,9 @@
   ],
   "preproc": {
     "rev": false,
-    "clean": true
+    "clean": true,
+    "trim": true,
+    "min_f": 2
   },
   "backend": "tensorflow",
   "dataset": "amz-polarity",
@@ -38,7 +40,7 @@
     "finetune": true
   },
   "train": {
-    "epochs": 5,
+    "epochs": 10,
     "optim": "adam",
     "eta": 0.00005,
     "model_zip": true,
