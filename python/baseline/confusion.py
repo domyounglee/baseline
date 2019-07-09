@@ -180,6 +180,20 @@ class ConfusionMatrix(object):
         else:
             return mcc
 
+    def get_r_k(self):
+        correct = np.trace(self._cm)
+        samples = np.sum(self._cm)
+        k_row = np.sum(self._cm, axis=1)
+        k_col = np.sum(self._cm, axis=0)
+
+        numer = correct * samples - np.dot(k_row, k_col)
+        denom1 = samples * samples - np.dot(k_row, k_row)
+        denom2 = samples * samples - np.dot(k_col, k_col)
+
+        mcc = numer / (np.sqrt(denom1 * denom2))
+        return mcc if not np.isnan(mcc) else 0
+
+
     def get_all_metrics(self):
         """Make a map of metrics suitable for reporting, keyed by metric name
 
@@ -199,6 +213,7 @@ class ConfusionMatrix(object):
             metrics['weighted_precision'] = self.get_weighted_precision()
             metrics['weighted_recall'] = self.get_weighted_recall()
             metrics['weighted_f1'] = self.get_weighted_f(1)
+            metrics['r_k_mcc'] = self.get_r_k()
         return metrics
 
     def add_batch(self, truth, guess):
