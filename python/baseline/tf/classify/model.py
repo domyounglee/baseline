@@ -240,6 +240,7 @@ class ClassifierModelBase(ClassifierModel):
         :param batch_dict: (``dict``) Contains any inputs to embeddings for this model
         :return: Each outcome as a ``list`` of tuples `(label, probability)`
         """
+        # print(batch_dict)
         feed_dict = self.make_input(batch_dict)
         probs = self.sess.run(self.probs, feed_dict=feed_dict)
         results = []
@@ -389,12 +390,12 @@ class ClassifierModelBase(ClassifierModel):
             word_embeddings = model.embed(**kwargs)
             input_sz = word_embeddings.shape[-1]
             pooled = model.pool(word_embeddings, input_sz, init, **kwargs)
-            stacked = model.stacked(pooled, init, **kwargs)
+            model.stack = model.stacked(pooled, init, **kwargs)
 
             # For fully connected layers, use xavier (glorot) transform
             with tf.variable_scope("output"):
 
-                model.logits = tf.identity(tf.layers.dense(stacked, nc,
+                model.logits = tf.identity(tf.layers.dense(model.stack, nc,
                                                            activation=None,
                                                            kernel_initializer=tf.glorot_uniform_initializer(seed)),
                                            name="logits")

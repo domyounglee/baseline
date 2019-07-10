@@ -232,6 +232,27 @@ class ClassifierService(Service):
     def signature_name(cls):
         return 'predict_text'
 
+    def getexamples(self, tokens, preproc=None):
+        """Take tokens and apply the internal vocab and vectorizers.  The tokens should be either a batch of text
+        single utterance of type ``list``
+        """
+        # print("hahah")
+        if preproc is not None:
+            logger.warning("Warning: Passing `preproc` to `ClassifierService.predict` is deprecated.")
+        tokens_seq, mxlen, mxwlen = self.batch_input(tokens)
+        self.set_vectorizer_lens(mxlen, mxwlen)
+        if self.preproc == "client":
+            examples = self.vectorize(tokens_seq)
+        elif self.preproc == 'server':
+            # TODO: here we allow vectorizers even for preproc=server to get `word_lengths`.
+            # vectorizers should not be available when preproc=server.
+            featurized_examples = self.vectorize(tokens_seq)
+            examples = {
+                        'tokens': np.array([" ".join(x) for x in tokens_seq]),
+                        self.model.lengths_key: featurized_examples[self.model.lengths_key]
+            }
+        return examples
+
     def predict(self, tokens, preproc=None):
         """Take tokens and apply the internal vocab and vectorizers.  The tokens should be either a batch of text
         single utterance of type ``list``
