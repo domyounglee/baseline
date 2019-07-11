@@ -1,29 +1,15 @@
 import numpy
 import string
 import pickle
-import torch
-import torch.nn as nn
 import argparse
 import os
-import json
-import sys
 import matplotlib.pyplot as plt
 import numpy as np
-
-
-# fix random seed for reproducibility
-np.random.seed(7)
-
-
 from utilities import GetRawDataBaseline, softmax, NsamplesPerClass, confusionMatrix
-
-
 import baseline as bl
-import mead as md
 from mead.utils import convert_path
 from training_n import e2e_noise_model
 
-trials = 2
 
 def main():
     parser = argparse.ArgumentParser(description='Train a text classifier with noisy labels')
@@ -61,10 +47,13 @@ def main():
 
     # Working Dataset
     Dataset = config_params['dataset']
+    current_directory = os.getcwd()
+    final_directory = os.path.join(current_directory, Dataset+"_noisy")
+    if not os.path.exists(final_directory):
+        os.makedirs(final_directory)
     # Load/save the Baseline configured data and Embedding weight matrix for reproducibility
-    BLconfigFile = os.path.join( Dataset + '_config_BLTask' + config_params['backend'])
+    BLconfigFile = os.path.join(final_directory, Dataset + '_config_BLTask' + config_params['backend'])
     print(BLconfigFile)
-
 
     nm = e2e_noise_model(Bmodel_params=config_params, Nmodel_params=jdata)
     nm.creatDataProfile(BLconfigFile, Cfile_dir, jsonFileToLoad)
@@ -79,19 +68,12 @@ def main():
     print('Number of validation samples: ', len(y_valid))
     print('Number of test samples: ', len(y_test))
 
-    models_in = list(jdata.keys())  # ['WoNM', 'NMWoRegu', 'NMwRegu0.01', 'NMwRegu0.1']
-    # fileName = os.path.join(Dataset, Dataset + '_B' +str(config_params['batchsz']) + 'Everything'+
-    #     rand+config_params['backend']+ str(int(0.2*100)) + args.optag)
-    # print(fileName)
-    # models_in = ['NMwRegu01']
-    # For reproducibility lets fix the noise distribution and save to the disk
-    # 0.1,0.2,0.3,0.4,0.5
-    # noise_input = [0]
-
+    models_in = list(jdata.keys())
+    # Repeat the experiments for each noise level.
     for noise_per in noise_input:
 
         if noise_per != 0:
-            file_name = os.path.join(Dataset,
+            file_name = os.path.join(final_directory,
                                      Dataset + '_' + 'noisy_train_data_' + rand + config_params['backend'] + str(
                                          int(noise_per * 100)))
             nm.creatNoiseProfile(file_name, noiselvl=noise_per, noisetype=Ntype)
@@ -100,27 +82,19 @@ def main():
 
         weight_dict = {}
         weight_dict['out_dist'] = nm.out_dist
-
+        # Repeat the training for each noise model specified in jdata
         for Nmodel in models_in:
 
             weight_para = []
             accuracies = []
             f1_scores = []
-            # model_features = jdata[Nmodel]
-            # noise_model = model_features["noise_model"]
-            # regu = model_features["regu"]
-            # penality = model_features["penality"]
-            # print(noise_model,regu,penality)
-
+            #
             for tr in range(trials):
-                # creatmodle
+                # create model
                 nm.creatNoiseModel(noisemodel=Nmodel, ndistribution=nm.out_dist, diagPen=float(args.nmScale) * n_class)
-                print(
-                "Model Parameters --> \n" + "Noise level: ", noise_per, "||Noise Type: ", Ntype, "|| Working model: ",
-                Nmodel, "|| Trial: ", tr, "||")
+                print( "Model Parameters --> \n" + "Noise level: ", noise_per, "||Noise Type: ", Ntype, "|| Working model: ", Nmodel, "|| Trial: ", tr, "||")
                 #  Train Model
                 nm.modelTrain(noiselvl=noise_per, noisemodel=Nmodel)
-                print('Noise level: ', noise_per, 'Working model: ', Nmodel, ' Trial: ', tr)
 
                 last_layer_weights, Acc_val, f1score = nm.modelTest(noisemodel=Nmodel)
 
@@ -141,10 +115,13 @@ def main():
             weight_dict[Nmodel + 'f1_scores'] = f1_scores
             weight_dict[Nmodel + 'accuracies'] = accuracies
 
-            fileName = os.path.join(Dataset, Dataset + '_B' + str(config_params['batchsz']) + 'Everything' +
-                                    rand + config_params['backend'] + str(int(0.2 * 100)) + args.optag)
-            print(fileName)
+            fileName = os.path.join(final_directory, Dataset + '_B' + str(config_params['batchsz']) + 'Everything' +
+                                    rand + config_params['backend'] + str(int(noise_per * 100)) + args.optag)
+            print("Noise model weights are stored at: ", fileName)
             pickle.dump(weight_dict, open(fileName, 'wb'))
 
+
 if __name__ == "__main__":
+    np.random.seed(7) # fix random seed for reproducibility
+    trials = 5  # repeat the experiment
     main()
