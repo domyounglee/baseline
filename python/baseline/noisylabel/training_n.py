@@ -1,31 +1,19 @@
-import numpy as np
-# import torch
-import pickle
 import os
+import numpy as np
+import pickle
 from sklearn.metrics import f1_score
 import matplotlib.pyplot as plt
-
 import baseline as bl
 from baseline.pytorch import *
-import mead as md
-
-import os
 import logging
-import argparse
-from copy import deepcopy
-from itertools import chain
-from baseline.utils import read_config_stream, normalize_backend
 import mead
+from baseline.utils import read_config_stream, normalize_backend
 from mead.utils import convert_path, parse_extra_args, configure_logger
-
-logger = logging.getLogger('mead')
-
-from mead.utils import convert_path
 
 from utilities import GetRawDataBaseline, confusionMatrix, NsamplesPerClass
 from noise_model import inject_noise
 
-
+logger = logging.getLogger('mead')
 class e2e_noise_model(object):
     """ Describes the end to end model. """
 
@@ -34,6 +22,7 @@ class e2e_noise_model(object):
         Bmodel_params: Json parameters for base model such as sst2-pytorch.json
         Nmodel_params: Json parameters for all the nosie models such as Noise_model_pysst2.json
         """
+        self.Bmodel_params = Bmodel_params
         self.Bmodel_params = Bmodel_params
         self.Nmodel_params = Nmodel_params
 
@@ -48,9 +37,15 @@ class e2e_noise_model(object):
         return ext
 
     def creatDataProfile(self, BLconfigFile, Cfile_dir, jsonFileToLoad, combatSkew=False):
-        """To ensure the reproducibility of results store the processed data sile at location BLconfigFile
+        """
+        To ensure the reproducibility of results store the processed data file at location BLconfigFile
         type(Cfile_dir): file location: where all the config files available
-        jsonFileToLoad: which file to work with
+
+        :param BLconfigFile: <path> to store the processed file.
+        :param Cfile_dir:  <path> of the config file
+        :param jsonFileToLoad: <str> config file
+        :param combatSkew: <bool> for now keep it False
+        :return:
         """
 
         if os.path.isfile(BLconfigFile):
@@ -108,11 +103,10 @@ class e2e_noise_model(object):
                          confi_task.test_data,
                          confi_task.labels], open(BLconfigFile, "wb"))
 
-            print(confi_task.train_data.examples.example_list[0])
-        # ,
-        # confi_task.labels
+            # print(confi_task.train_data.examples.example_list[0])
 
         if combatSkew:
+            # Needs further investigation.
             print("Skew Combat Training is OOONNN...")
             skew_dist = NsamplesPerClass(self.y_train, isPlot=False)
             classes_tk = [x for x in range(len(skew_dist)) if
@@ -130,11 +124,17 @@ class e2e_noise_model(object):
             _, y_test = GetRawDataBaseline(self.test_data.examples)
             self.test_data.steps = len(y_test)
             _, self.y_train = GetRawDataBaseline(self.train_data.examples)
+
         return
 
     def creatNoiseProfile(self, file_name, noisetype, noiselvl):
-        """Creates noise distribution and save noisy labels to the disk for reproducibility."""
-
+        """
+        Creates noise distribution and save noisy labels to the disk for reproducibility.
+        :param file_name: <str> generate the noisyu labels and save the files to reproduce the results
+        :param noisetype: <str> type of label noise.
+        :param noiselvl: <float> varies [0,0, 0.9]
+        :return:
+        """
         if noiselvl == 0:
             self.y_noisy_train = self.y_train
         else:
@@ -171,7 +171,13 @@ class e2e_noise_model(object):
         return
 
     def creatNoiseModel(self, noisemodel, ndistribution, diagPen=1):
-        """Creates end-end-end deep network model given the noise model and noise distribution."""
+        """
+        Creates end-end-end deep network model given the noise model and noise distribution.
+        :param noisemodel: str
+        :param ndistribution: noise distribution matrix
+        :param diagPen: specify the k*n_class initialization of noise model
+        :return: baseline model
+        """
 
         from classify_conv_noisylabel import ConvNoiseModel
         from baseline.pytorch.classify import ConvModel
@@ -199,13 +205,20 @@ class e2e_noise_model(object):
             if n_paramaters["weighIni"] == "rand":
                 print("Last layer weights are initialized to normal random")
                 model.output.linear2.weight.data.copy_(torch.from_numpy(np.random.rand(n_cls, n_cls)))
-            print("Last layer parameters: ", list(model.parameters())[-1])
+
+            print("Noise model initialization weights: ", list(model.parameters())[-1])
 
         self.model = model
         return model
 
     def modelTrain(self, noiselvl, noisemodel):
-        """Train the end-to-end model."""
+        """
+        Train the end-to-end model.
+
+        :param noiselvl: <float> level of label noise
+        :param noisemodel: <str> type of noise model.
+        :return:
+        """
 
         from baseline.pytorch.classify import fit
 
@@ -221,7 +234,12 @@ class e2e_noise_model(object):
         return
 
     def modelTest(self, noisemodel):
-        """Test the learned model."""
+        """
+        Test the learned model.
+
+        :param noisemodel: <str> type of noise model
+        :return: weight of the noise model and test accuracy and f1 score
+        """
 
         last_layer_weights = 0
 
@@ -234,13 +252,14 @@ class e2e_noise_model(object):
         from baseline.train import EpochReportingTrainer, create_trainer
         from baseline.pytorch.classify import ClassifyTrainerPyTorch
         from baseline.utils import listify, to_spans, f_score, revlut, get_model_file
-        # from baseline.reporting import basic_reporting
 
         args = {**self.Bmodel_params['model'], **self.Bmodel_params['train']}
         # trainer = create_trainer(ClassifyTrainerPyTorch, self.model, **args)
         trainer = create_trainer(self.model, **args)
 
         trn = trainer.test(self.test_data, reporting_fns=[])
+
+        # To do--required when the dataset size is preety big and we need to obtain the last layer activations.
 
         # ditss = {'x': np.array(X_test)}  # x.astype(dtype = int)}
         # self.y_pred = np.argmax(self.model.classify_prob(ditss), axis=1)
@@ -258,7 +277,11 @@ class e2e_noise_model(object):
         return last_layer_weights, trn['acc'] * 100, trn['f1'] * 100
 
     def lastLayerAct(self):
-        """ Returns the last FC layer activations for training and test data."""
+
+        """
+        Returns the last FC layer activations for training and test data.
+        :return:
+        """
 
         X_test, y_test = GetRawDataBaseline(self.test_data.examples)
         X_train, y_train = GetRawDataBaseline(self.train_data.examples)
@@ -431,7 +454,7 @@ class e2e_noise_model(object):
         return
 
     # Not Complete yet.
-    def clas_specific_testing(self, h):
+    def class_specific_testing(self, h):
 
         if Dataset == 'dbpedia':
             y_pred = np.zeros((1, len(X_test)))[0]
