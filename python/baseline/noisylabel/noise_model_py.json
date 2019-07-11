@@ -1,0 +1,47 @@
+{
+    "WoNM": {
+    	"noise_model" : false,
+		"regu" : "_",
+		"penality" : 0,
+		"weighIni": "none"
+	},
+
+	    "NMWoRegu": {
+    	"noise_model" : true,
+		"regu" : "_",
+		"penality" : 0,
+		"weighIni": "ones"
+	},
+
+
+    "NMwRegu001": {
+    	"noise_model" : true,
+		"regu" : "l2",
+		"penality" : 0.01,
+		"weighIni": "ones"
+	},
+
+
+    "NMwRegu01": {
+    	"noise_model" : true,
+		"regu" : "l2",
+		"penality" : 0.1,
+		"weighIni": "ones"
+	},
+
+    "TDwRegu01": {
+    	"noise_model" : true,
+		"regu" : "l2",
+		"penality" : 0.1,
+		"weighIni": "dist"
+	},
+
+    "RDwRegu01": {
+    	"noise_model" : true,
+		"regu" : "l2",
+		"penality" : 0.1,
+		"weighIni": "rand"
+	}
+
+}
+
