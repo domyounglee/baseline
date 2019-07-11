@@ -6,6 +6,7 @@ from sklearn.metrics import f1_score
 import matplotlib.pyplot as plt
 
 import baseline as bl
+from baseline.pytorch import *
 import mead as md
 
 import os
@@ -106,6 +107,8 @@ class e2e_noise_model(object):
                          confi_task.valid_data,
                          confi_task.test_data,
                          confi_task.labels], open(BLconfigFile, "wb"))
+
+            print(confi_task.train_data.examples.example_list[0])
         # ,
         # confi_task.labels
 
@@ -178,10 +181,12 @@ class e2e_noise_model(object):
 
         if noisemodel == "WoNM":
             self.Bmodel_params["model_type"] = "default"
-            model = ConvModel.create(self.embeddings, self.labels, nm=noisemodel, **self.Bmodel_params["model"])
+            self.Bmodel_params["nm"] = False
+            model = ConvModel.create(self.embeddings, self.labels, **self.Bmodel_params["model"])
         else:
             self.Bmodel_params["model_type"] = "cnn_noisy"
-            model = ConvNoiseModel.create(self.embeddings, self.labels, nm=noisemodel, **self.Bmodel_params["model"])
+            self.Bmodel_params["nm"] = noisemodel
+            model = ConvNoiseModel.create(self.embeddings, self.labels, **self.Bmodel_params["model"])
 
             if n_paramaters["weighIni"] == "ones":
                 print("Initialized to identity matrix with scaling: {}".format(diagPen))
@@ -229,12 +234,13 @@ class e2e_noise_model(object):
         from baseline.train import EpochReportingTrainer, create_trainer
         from baseline.pytorch.classify import ClassifyTrainerPyTorch
         from baseline.utils import listify, to_spans, f_score, revlut, get_model_file
-        from baseline.reporting import basic_reporting
+        # from baseline.reporting import basic_reporting
 
         args = {**self.Bmodel_params['model'], **self.Bmodel_params['train']}
-        trainer = create_trainer(ClassifyTrainerPyTorch, self.model, **args)
+        # trainer = create_trainer(ClassifyTrainerPyTorch, self.model, **args)
+        trainer = create_trainer(self.model, **args)
 
-        trn = trainer.test(self.test_data, reporting_fns=listify(self.Bmodel_params.get('reporting', basic_reporting)))
+        trn = trainer.test(self.test_data, reporting_fns=[])
 
         # ditss = {'x': np.array(X_test)}  # x.astype(dtype = int)}
         # self.y_pred = np.argmax(self.model.classify_prob(ditss), axis=1)
@@ -249,7 +255,7 @@ class e2e_noise_model(object):
         # f1score = f1_score(y_test, self.y_pred, average='macro')
         # print("F1 Score: %.2f%%" % f1score)
 
-        return last_layer_weights, trn['acc'] * 100, trn['macro_f1'] * 100
+        return last_layer_weights, trn['acc'] * 100, trn['f1'] * 100
 
     def lastLayerAct(self):
         """ Returns the last FC layer activations for training and test data."""
