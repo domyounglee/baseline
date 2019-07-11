@@ -173,7 +173,7 @@ class e2e_noise_model(object):
     def creatNoiseModel(self, noisemodel, ndistribution, diagPen=1):
         """Creates end-end-end deep network model given the noise model and noise distribution."""
 
-        from classify_cnn_noisy import ConvNoiseModel
+        from classify_conv_noisylabel import ConvNoiseModel
         from baseline.pytorch.classify import ConvModel
 
         n_paramaters = self.Nmodel_params[noisemodel]
