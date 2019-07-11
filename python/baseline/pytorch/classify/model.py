@@ -41,7 +41,7 @@ class ClassifierModelBase(nn.Module, ClassifierModel):
         model.log_softmax = nn.LogSoftmax(dim=1)
         pool_dim = model.init_pool(input_sz, **kwargs)
         stacked_dim = model.init_stacked(pool_dim, **kwargs)
-        model.init_output(stacked_dim, len(labels))
+        model._init_output(stacked_dim, len(labels))
         logger.info(model)
         return model
 
@@ -85,7 +85,7 @@ class ClassifierModelBase(nn.Module, ClassifierModel):
     def forward(self, input):
         # BxTxC
         embeddings = self.embed(input)
-        pooled = self.pool(embeddings, input['lengths'])
+        pooled = self.pool(embeddings, 0)#input['lengths'])
         stacked = self.stacked(pooled)
         return self.output(stacked)
 
@@ -143,7 +143,7 @@ class ClassifierModelBase(nn.Module, ClassifierModel):
         append2seq(self.stacked_layers, layers)
         return in_layer_sz
 
-    def init_output(self, input_dim, nc):
+    def _init_output(self, input_dim, nc):
         self.output = nn.Sequential()
         append2seq(self.output, (
             nn.Linear(input_dim, nc),
