@@ -37,36 +37,11 @@ python main.py --config ~/baseline/python/mead/config/sst2.json  --noisemodel ~/
     + `NMwl1l2Regu001`: A noise model with l2-l1 (elastic net) regularization (penalty 0.01) stacked and noise model's weights are initialized to identity.
 
 
+---
+## Citing
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+If you use the library, please cite the following papers:
+]
 
 ```
 @article{jindal2019effective,
@@ -74,5 +49,23 @@ python main.py --config ~/baseline/python/mead/config/sst2.json  --noisemodel ~/
   author={Jindal, Ishan and Pressel, Daniel and Lester, Brian and Nokleby, Matthew},
   journal={arXiv preprint arXiv:1903.07507},
   year={2019}
+}
+```
+
+```
+@InProceedings{W18-2506,
+  author =    "Pressel, Daniel
+               and Ray Choudhury, Sagnik
+               and Lester, Brian
+               and Zhao, Yanjie
+               and Barta, Matt",
+  title =     "Baseline: A Library for Rapid Modeling, Experimentation and
+               Development of Deep Learning Algorithms targeting NLP",
+  booktitle = "Proceedings of Workshop for NLP Open Source Software (NLP-OSS)",
+  year =      "2018",
+  publisher = "Association for Computational Linguistics",
+  pages =     "34--40",
+  location =  "Melbourne, Australia",
+  url =       "http://aclweb.org/anthology/W18-2506"
 }
 ```
