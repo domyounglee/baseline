@@ -20,16 +20,6 @@ class ConvNoiseModel(ConvModel):
             # ('drop1', nn.Dropout(p=0.2)),
             ('logSoftmax', nn.LogSoftmax(dim=1))]))
 
-        # self.output = nn.Sequential()
-        # append2seq(self.output, (
-        #     nn.Linear(input_dim, nc),
-        #     nn.Softmax(dim=1),
-        #     nn.Linear(nc, nc, bias=False),
-        #     nn.LogSoftmax(dim=1),
-        #     )
-        # )
-
-
 
 def create_model(embeddings, labels, **kwargs):
     return ConvNoiseModel.create(embeddings, labels, **kwargs)
@@ -38,17 +28,3 @@ def create_model(embeddings, labels, **kwargs):
 def load_model(modelname, **kwargs):
     return ConvNoiseModel.load(modelname, **kwargs)
 
-
-
-#
-# def _init_output(self, input_dim, nc):
-#         self.output = nn.Sequential()
-#         append2seq(self.output, (
-#             nn.Linear(input_dim, nc),
-#             nn.Softmax(dim=1)))
-#         self.output_noisy = nn.Sequential()
-#         append2seq(self.output_noisy, (
-#             nn.Linear(nc, nc, bias=False),
-#             nn.LogSoftmax(dim=1),
-#             )
-#         # )
