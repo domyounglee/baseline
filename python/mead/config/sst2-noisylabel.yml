@@ -1,0 +1,39 @@
+modules:
+  - noisyconv_pyt
+batchsz: 50
+basedir: sst2-pyt
+preproc:
+  mxlen: 100
+  rev: false
+  clean: true
+backend: pytorch
+dataset: SST2
+loader:
+  reader_type: default
+unif: 0.25
+model:
+  model_type: noisyconv
+  filtsz: [3,4,5]
+  cmotsz: 100
+  dropout: 0.5
+
+features:
+  - name: word
+    vectorizer:
+      type: token1d
+      transform: baseline.lowercase
+    embeddings:
+      label: w2v-gn
+train:
+  fit_func: train-noisy-model
+  epochs: 2
+  optim: adadelta
+  eta: 1.0
+  early_stopping_metric: acc
+  noiselvl: 0.2
+  noisetyp: uni
+  nmpenality: 0.1
+  verbose:
+    console: True
+    file: sst2-cm.csv
+
