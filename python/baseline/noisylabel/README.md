@@ -1,15 +1,12 @@
 # Classification in the presence of label noise.
 
-Run label noise experiments via:
-```
-python main.py --config ~/baseline/python/mead/config/sst2.json  --noisemodel ~/baseline/noisylabel/noise_model_py.json --noisetype uni --noiselvl 0.0 0.1 0.2 0.3 0.4 0.45 
-```
+Run via mead train
 
-- `--config` specifies the Baseline configuration for a dataset.
-- `--noisemodel` specifies the types of noise model one wants to try. Different models we used in our experiments include `WoNM`, `NMWoRegu`, `NMwRegu01` etc. Further information on this can be found under types of experiments. `noise_model_py.json` contains information for all the models. 
-- `--noisetype` Default is uniform label noise (uni). One can choose among ['uni', 'rand', 'cc'].
-- `--noiselvl` specify the level of artificial label noise injected into the datasets. can got from 0.0 --> 0.9
-- `--nmScale` defines the scaling factor of noise model initialization. Default is identity matrix. 
+- Go to `baseline/python/mead/`
+
+```
+python trainer.py --config ~/baseline/python/mead/config/sst2-noisylabel.json  
+```
 
 ## Types of Experiments
 
