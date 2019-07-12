@@ -114,7 +114,7 @@ class InjectNoise(object):
         return noisy_label
 
 
-def injectlabelnoise(ts, vs, noise_level, noise_type):
+def inject_label_noise(ts, vs, noise_level, noise_type):
     """
     :param ts: Input pyt training data
     :param vs: Input Valid data
@@ -140,7 +140,8 @@ def injectlabelnoise(ts, vs, noise_level, noise_type):
     for i in range(len(vs.examples)):
         vs.examples[i]['y'] = int(valid_noise.noisy_label[i])
 
-    return ts, vs
+    return ts, vs, train_noise.noise_matrix
+
 
 @register_model(task='classify', name='noisyconv')
 class NoisyConvClassifier(ClassifierModelBase):
@@ -148,14 +149,12 @@ class NoisyConvClassifier(ClassifierModelBase):
     def __init__(self):
         super(NoisyConvClassifier, self).__init__()
 
-
     def init_output(self, input_dim, nc):
         self.output = nn.Sequential(OrderedDict([
             ('linear1', nn.Linear(input_dim, nc)),
             ('softmax', nn.Softmax(dim=1)),
             ('linear2', nn.Linear(nc, nc, bias=False)),
             ('logSoftmax', nn.LogSoftmax(dim=1))]))
-
 
     def init_pool(self, dsz, **kwargs):
         filtsz = kwargs['filtsz']
@@ -166,6 +165,7 @@ class NoisyConvClassifier(ClassifierModelBase):
     def pool(self, btc, lengths):
         embeddings = btc.transpose(1, 2).contiguous()
         return self.parallel_conv(embeddings)
+
 
 @register_training_func(task='classify', name='train-noisy-model')
 def fit(model, ts, vs, es=None, **kwargs):
@@ -196,6 +196,8 @@ def fit(model, ts, vs, es=None, **kwargs):
     noise_level = kwargs.get('noiselvl', 0.0)
     weight_decay = kwargs.get('nmpenality', 0.0)
     noise_type = kwargs.get('noisetyp', 'uni')
+    nm_init = kwargs.get('nminit', 'identity')
+    scaling = kwargs.get('nmscale', 1)
 
     do_early_stopping = bool(kwargs.get('do_early_stopping', True))
     verbose = kwargs.get('verbose',
@@ -215,12 +217,25 @@ def fit(model, ts, vs, es=None, **kwargs):
     reporting_fns = listify(kwargs.get('reporting', []))
     logger.info('reporting %s', reporting_fns)
 
+    if noise_level > 0:
+        ts, vs, nm_distribution = inject_label_noise(ts, vs, noise_level, noise_type)
+
+    if nm_init == "identity":
+        print("Initialized to identity matrix with scaling: {}".format(scaling))
+        model.output.linear2.weight.data.copy_(torch.from_numpy(scaling * np.eye(len(model.labels))))
+
+    if nm_init == "dist":
+        print("Last layer weights are initialized to noise distribution")
+        model.output.linear2.weight.data.copy_(torch.from_numpy(nm_distribution))
+
+    if nm_init == "rand":
+        print("Last layer weights are initialized to normal random")
+        model.output.linear2.weight.data.copy_(torch.from_numpy(np.random.rand(len(model.labels), len(model.labels))))
+
     trainer = create_trainer(model, **kwargs)
+    print("Noise model initialization weights: ", list(model.parameters())[-1])
 
     last_improved = 0
-
-    if noise_level > 0:
-        ts, vs = injectlabelnoise(ts, vs, noise_level, noise_type)
 
     for epoch in range(epochs):
         trainer.train(ts, reporting_fns)
@@ -249,3 +264,46 @@ def fit(model, ts, vs, es=None, **kwargs):
         test_metrics = trainer.test(es, reporting_fns, phase='Test', verbose=verbose, output=output, txts=txts)
     return test_metrics
 
+
+# def _test(self, loader, **kwargs):
+#     print("worked with")
+#     self.model.eval()
+#     total_loss = 0
+#     total_norm = 0
+#     steps = len(loader)
+#     pg = create_progress_bar(steps)
+#     cm = ConfusionMatrix(self.labels)
+#     verbose = kwargs.get("verbose", None)
+#     output = kwargs.get('output')
+#     txts = kwargs.get('txts')
+#     handle = None
+#     line_number = 0
+#     if output is not None and txts is not None:
+#         handle = open(output, "w")
+#
+#     for batch_dict in pg(loader):
+#         example = self._make_input(batch_dict)
+#         ys = example.pop('y')
+#         pred = self.model(example)
+#         loss = self.crit(pred, ys)
+#         if handle is not None:
+#             for p, y in zip(pred, ys):
+#                 handle.write(
+#                     '{}\t{}\t{}\n'.format(" ".join(txts[line_number]), self.model.labels[p], self.model.labels[y]))
+#                 line_number += 1
+#         batchsz = self._get_batchsz(batch_dict)
+#         total_loss += loss.item() * batchsz
+#         total_norm += batchsz
+#         _add_to_cm(cm, ys, pred)
+#
+#     metrics = cm.get_all_metrics()
+#     metrics['avg_loss'] = total_loss / float(total_norm)
+#     verbose_output(verbose, cm)
+#     if handle is not None:
+#         handle.close()
+#
+#     return metrics
+
+#
+# @register_trainer(task='classify', name='noisy-trainer')
+# class ClassifyTrainerPyTorch(EpochReportingTrainer):
