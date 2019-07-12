@@ -1,3 +1,5 @@
+import torch
+import torch.nn as nn
 import logging
 from baseline.model import ClassifierModel, register_model
 from baseline.pytorch.torchy import *
@@ -41,7 +43,7 @@ class ClassifierModelBase(nn.Module, ClassifierModel):
         model.log_softmax = nn.LogSoftmax(dim=1)
         pool_dim = model.init_pool(input_sz, **kwargs)
         stacked_dim = model.init_stacked(pool_dim, **kwargs)
-        model._init_output(stacked_dim, len(labels))
+        model.init_output(stacked_dim, len(labels))
         logger.info(model)
         return model
 
@@ -85,7 +87,7 @@ class ClassifierModelBase(nn.Module, ClassifierModel):
     def forward(self, input):
         # BxTxC
         embeddings = self.embed(input)
-        pooled = self.pool(embeddings, 0)#input['lengths'])
+        pooled = self.pool(embeddings, input['lengths'])
         stacked = self.stacked(pooled)
         return self.output(stacked)
 
@@ -143,7 +145,7 @@ class ClassifierModelBase(nn.Module, ClassifierModel):
         append2seq(self.stacked_layers, layers)
         return in_layer_sz
 
-    def _init_output(self, input_dim, nc):
+    def init_output(self, input_dim, nc):
         self.output = nn.Sequential()
         append2seq(self.output, (
             nn.Linear(input_dim, nc),
