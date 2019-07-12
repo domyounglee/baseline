@@ -1,6 +1,16 @@
 import numpy as np
-from utilities import minDiagonalSwap
 
+def minDiagonalSwap(nums, index):
+    """ Return inplace swaped.
+
+    Swap the diagonal element with the minimum element in the array
+    return inplace altered list.
+    """
+    ind = np.argmin(nums)
+    temp = nums[index]
+    nums[index] = nums[ind]
+    nums[ind] = temp
+    return
 
 class inject_noise(object):
     # class fo injecting artificial noise to the clean labels.
