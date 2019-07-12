@@ -225,13 +225,13 @@ def fit(model, ts, vs, es=None, **kwargs):
         print("Initialized to identity matrix with scaling: {}".format(nm_scaling))
         model.output.noiselayer.weight.data.copy_(torch.from_numpy(nm_scaling * np.eye(len(model.labels))))
 
-    if nm_init == "dist":
+    elif nm_init == "dist":
         print("Last layer weights are initialized to input noise distribution")
         model.output.noiselayer.weight.data.copy_(torch.from_numpy(nm_distribution))
         # TO-ANALYSE (scaling of nm_distribution intialization)
         # model.output.noiselayer.weight.data.copy_(nm_scaling * torch.from_numpy(nm_distribution))
 
-    if nm_init == "rand":
+    elif nm_init == "rand":
         print("Last layer weights are initialized to normal random")
         model.output.noiselayer.weight.data.copy_(torch.from_numpy(np.random.rand(len(model.labels), len(model.labels))))
 
