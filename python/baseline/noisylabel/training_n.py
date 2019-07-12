@@ -293,7 +293,7 @@ class e2e_noise_model(object):
 
         for i in range(len(self.y_train) // 10):
             ditss = {'x': np.array(X_train[10 * i + 0:10 * (i + 1)])}  # x.astype(dtype = int)}
-            x_train[10 * i + 0:10 * (i + 1), :] = self.model.classify_lastlayer(ditss)
+            x_train[10 * i + 0:10 * (i + 1), :] = self.model.predict_lastlayer(ditss)
         print("Size of Training Matrix: ", x_train.shape)
 
         ditss = {'x': np.array(X_test)}
