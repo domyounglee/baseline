@@ -10,8 +10,108 @@ from baseline.reporting import register_reporting, ReportingHook
 from baseline.model import register_model
 from baseline.pytorch.torchy import *
 from collections import OrderedDict
-from noise_model import inject_noise
 logger = logging.getLogger('baseline')
+
+def minDiagonalSwap(nums, index):
+    """ Return inplace swaped.
+
+    Swap the diagonal element with the minimum element in the array
+    return inplace altered list.
+    """
+    ind = np.argmin(nums)
+    temp = nums[index]
+    nums[index] = nums[ind]
+    nums[ind] = temp
+    return
+
+
+class InjectNoise(object):
+    # class for injecting artificial noise to the clean labels.
+
+    def __init__(self, y_train, n_type, noiselvl, noise_mat=np.zeros(0)):
+        """
+        type(n_type): str: noise type ['uni','rand','CC']
+        type(y_train): Numpy array: clean training labels
+        type(noiselvl): float: input levelof noise
+        """
+        self.n_cls = len(list(set(y_train)))
+        self.type = n_type
+        self.noiselvl = noiselvl
+        self.true_label = y_train
+        if not noise_mat.any():
+            self.noise_matrix = self.gen_noise_matrix()
+        else:
+            self.noise_matrix = noise_mat
+        # print(self.noise_matrix)
+        self.noisy_label = self.gen_labels()
+        print('object created')
+
+    def gen_noise_matrix(self):
+        """Generate the random/uniform noise matrix
+        return: a stochastic matrix based on the type of noise.
+        """
+        n_class = self.n_cls
+        noise_matrix = np.zeros([n_class, n_class], dtype='float')
+
+        if self.n_cls <= 2:
+            noise_matrix = (1-self.noiselvl)*np.eye(n_class, dtype='float') + self.noiselvl*(np.ones(n_class, dtype='float') - np.eye(n_class, dtype='float'))
+        else:
+            # Defines random noise over unit simplex
+            if self.type == 'rand':
+                for a in range(n_class):
+                    nums = [np.random.randint(0, 10)*1.0 for x in  range(n_class)]
+                    # print(nums[1]/sum(np.array(nums)))
+                    nums = self.noiselvl*(nums/sum(np.array(nums)))
+                    # print(nums)
+                    minDiagonalSwap(nums, a)
+                    noise_matrix[a, :] = nums
+                    # print(noise_matrix)
+                noise_matrix = (1-self.noiselvl)*np.eye(n_class, dtype='float') + noise_matrix
+
+            # defines uniform noise
+            elif self.type == 'uni':
+                noise_matrix = ((1-self.noiselvl)*np.eye(n_class, dtype='float') + (self.noiselvl/n_class)*(np.ones(n_class, dtype='float')))
+            # TO-DO
+            # define other type of noise
+            elif self.type == 'cc':
+                levels = [np.random.randint(0,n_class)*1.0 for i in range(n_class)]
+                levels = n_class*self.noiselvl*(levels/sum(np.array(levels)))
+                ind = 0
+                for n in levels:
+                    nums = [np.random.randint(0, 10)*1.0 for x in  range(n_class)]
+                    # print(nums[1]/sum(np.array(nums)))
+                    nums = n*(nums/sum(np.array(nums)))
+                    # print(nums)
+                    minDiagonalSwap(nums, ind)
+                    noise_matrix[ind, :] =(1-n)*np.eye(n_class, dtype='float')[ind] + nums
+                    ind = ind + 1
+                print(noise_matrix)
+            else:
+                print("Please define correct form of noise ['uni','rand','cc']")
+                return None
+        return noise_matrix
+
+    def gen_labels(self):
+        """Generate noisy labels for the training and valid set
+        return: Array of noisy labels.
+        """
+
+        noisy_label = np.zeros_like(self.true_label)
+        classes = list(set(self.true_label))
+
+        for cls in range(self.n_cls):
+            flip_label = []
+            n_cls_labels = sum(self.true_label == classes[cls])
+
+            for _ in range(n_cls_labels):
+                flip_label.append(np.random.choice(np.arange(0, self.n_cls), p=self.noise_matrix[cls,:]))
+
+            flip_label = np.array(flip_label)
+
+            noisy_label[self.true_label == cls] = flip_label.astype(int)
+            print('Number of labels for class ', cls, ' flipped: ', n_cls_labels - sum(flip_label == cls), 'out of ', n_cls_labels)
+
+        return noisy_label
 
 
 def injectlabelnoise(ts, vs, noise_level, noise_type):
@@ -22,6 +122,7 @@ def injectlabelnoise(ts, vs, noise_level, noise_type):
     :param noise_type: <str> Noise type ('uni','rand', 'cc')
     :return: train and valid dataset with label noise injected
     """
+    # np.random.seed(7)
     train_y = []
     valid_y = []
     for i in range(len(ts.examples)):
@@ -29,8 +130,8 @@ def injectlabelnoise(ts, vs, noise_level, noise_type):
     for i in range(len(vs.examples)):
         valid_y.append(vs.examples[i]['y'])
 
-    train_noise = inject_noise(np.array(train_y), n_type=noise_type, noiselvl=noise_level)
-    valid_noise = inject_noise(np.array(valid_y), n_type=noise_type, noiselvl=noise_level,
+    train_noise = InjectNoise(np.array(train_y), n_type=noise_type, noiselvl=noise_level)
+    valid_noise = InjectNoise(np.array(valid_y), n_type=noise_type, noiselvl=noise_level,
                                noise_mat=train_noise.noise_matrix)
     print("Injected label transition matrix: ", train_noise.noise_matrix)
 
@@ -65,7 +166,6 @@ class NoisyConvClassifier(ClassifierModelBase):
     def pool(self, btc, lengths):
         embeddings = btc.transpose(1, 2).contiguous()
         return self.parallel_conv(embeddings)
-
 
 @register_training_func(task='classify', name='train-noisy-model')
 def fit(model, ts, vs, es=None, **kwargs):
@@ -148,3 +248,47 @@ def fit(model, ts, vs, es=None, **kwargs):
         trainer = create_trainer(model, **kwargs)
         test_metrics = trainer.test(es, reporting_fns, phase='Test', verbose=verbose, output=output, txts=txts)
     return test_metrics
+
+
+def _test(self, loader, **kwargs):
+    print("worked with")
+    self.model.eval()
+    total_loss = 0
+    total_norm = 0
+    steps = len(loader)
+    pg = create_progress_bar(steps)
+    cm = ConfusionMatrix(self.labels)
+    verbose = kwargs.get("verbose", None)
+    output = kwargs.get('output')
+    txts = kwargs.get('txts')
+    handle = None
+    line_number = 0
+    if output is not None and txts is not None:
+        handle = open(output, "w")
+
+    for batch_dict in pg(loader):
+        example = self._make_input(batch_dict)
+        ys = example.pop('y')
+        pred = self.model(example)
+        loss = self.crit(pred, ys)
+        if handle is not None:
+            for p, y in zip(pred, ys):
+                handle.write(
+                    '{}\t{}\t{}\n'.format(" ".join(txts[line_number]), self.model.labels[p], self.model.labels[y]))
+                line_number += 1
+        batchsz = self._get_batchsz(batch_dict)
+        total_loss += loss.item() * batchsz
+        total_norm += batchsz
+        _add_to_cm(cm, ys, pred)
+
+    metrics = cm.get_all_metrics()
+    metrics['avg_loss'] = total_loss / float(total_norm)
+    verbose_output(verbose, cm)
+    if handle is not None:
+        handle.close()
+
+    return metrics
+
+#
+# @register_trainer(task='classify', name='noisy-trainer')
+# class ClassifyTrainerPyTorch(EpochReportingTrainer):
