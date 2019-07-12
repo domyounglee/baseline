@@ -153,7 +153,7 @@ class NoisyConvClassifier(ClassifierModelBase):
         self.output = nn.Sequential(OrderedDict([
             ('linear1', nn.Linear(input_dim, nc)),
             ('softmax', nn.Softmax(dim=1)),
-            ('linear2', nn.Linear(nc, nc, bias=False)),
+            ('noiselayer', nn.Linear(nc, nc, bias=False)),
             ('logSoftmax', nn.LogSoftmax(dim=1))]))
 
     def init_pool(self, dsz, **kwargs):
@@ -197,7 +197,7 @@ def fit(model, ts, vs, es=None, **kwargs):
     weight_decay = kwargs.get('nmpenality', 0.0)
     noise_type = kwargs.get('noisetyp', 'uni')
     nm_init = kwargs.get('nminit', 'identity')
-    scaling = kwargs.get('nmscale', 1)
+    nm_scaling = kwargs.get('nmscale', 1)
 
     do_early_stopping = bool(kwargs.get('do_early_stopping', True))
     verbose = kwargs.get('verbose',
@@ -221,16 +221,16 @@ def fit(model, ts, vs, es=None, **kwargs):
         ts, vs, nm_distribution = inject_label_noise(ts, vs, noise_level, noise_type)
 
     if nm_init == "identity":
-        print("Initialized to identity matrix with scaling: {}".format(scaling))
-        model.output.linear2.weight.data.copy_(torch.from_numpy(scaling * np.eye(len(model.labels))))
+        print("Initialized to identity matrix with scaling: {}".format(nm_scaling))
+        model.output.noiselayer.weight.data.copy_(torch.from_numpy(nm_scaling * np.eye(len(model.labels))))
 
     if nm_init == "dist":
-        print("Last layer weights are initialized to noise distribution")
-        model.output.linear2.weight.data.copy_(torch.from_numpy(nm_distribution))
+        print("Last layer weights are initialized to input noise distribution")
+        model.output.noiselayer.weight.data.copy_(torch.from_numpy(nm_distribution))
 
     if nm_init == "rand":
         print("Last layer weights are initialized to normal random")
-        model.output.linear2.weight.data.copy_(torch.from_numpy(np.random.rand(len(model.labels), len(model.labels))))
+        model.output.noiselayer.weight.data.copy_(torch.from_numpy(np.random.rand(len(model.labels), len(model.labels))))
 
     trainer = create_trainer(model, **kwargs)
     print("Noise model initialization weights: ", list(model.parameters())[-1])

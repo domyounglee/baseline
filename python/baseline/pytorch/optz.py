@@ -170,21 +170,22 @@ class OptimizerManager(object):
 
     def _init_optimizer(self, model, **kwargs):
         wd = float(kwargs.get('weight_decay', 0))
+        npenality = float(kwargs.get('nmpenality', 0.0))
         nm = float(kwargs.get('nm', False))
         optim = kwargs.get('optim', 'sgd')
         self.current_lr = kwargs.get('eta', kwargs.get('lr', 0.01))
         self.step = self._step_then_update
         if optim == 'adadelta':
-            logger.info('adadelta(eta=%f, wd=%d)', self.current_lr, wd)
             if not nm:
-                print(wd)
+                logger.info('adadelta(eta=%f, wd=%d)', self.current_lr, wd)
                 self.optimizer = torch.optim.Adadelta(model.parameters(), lr=self.current_lr, weight_decay=wd)
             else:
+                logger.info('adadelta(eta=%f, wd=%d, noisepenality=%f)', self.current_lr, wd, npenality)
                 opt_nm = [
                     {'params': model.embeddings.parameters(), 'weight_decay': 0},
                     {'params': model.parallel_conv.parameters(), 'weight_decay': 0},
                     {'params': model.output.linear1.parameters(), 'weight_decay': 0},
-                    {'params': model.output.linear2.parameters(), 'weight_decay': wd}]
+                    {'params': model.output.noiselayer.parameters(), 'weight_decay': npenality}]
                 self.optimizer = torch.optim.Adadelta(opt_nm)
         elif optim.startswith('adam'):
             beta1 = kwargs.get('beta1', 0.9)
