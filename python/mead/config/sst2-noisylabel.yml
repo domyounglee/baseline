@@ -34,7 +34,7 @@ train:
   noiselvl: 0.2
   noisetyp: uni
   nmpenality: 0.1
-  nminit: dist
+  nminit: identity
   nmscale: 2
   verbose:
     console: True

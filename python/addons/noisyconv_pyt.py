@@ -155,6 +155,7 @@ class NoisyConvClassifier(ClassifierModelBase):
             ('softmax', nn.Softmax(dim=1)),
             ('noiselayer', nn.Linear(nc, nc, bias=False)),
             ('logSoftmax', nn.LogSoftmax(dim=1))]))
+        # To-DO better modeling of output layer to make it compatible with LSTM model as well.
 
     def init_pool(self, dsz, **kwargs):
         filtsz = kwargs['filtsz']
@@ -227,6 +228,8 @@ def fit(model, ts, vs, es=None, **kwargs):
     if nm_init == "dist":
         print("Last layer weights are initialized to input noise distribution")
         model.output.noiselayer.weight.data.copy_(torch.from_numpy(nm_distribution))
+        # TO-ANALYSE (scaling of nm_distribution intialization)
+        # model.output.noiselayer.weight.data.copy_(nm_scaling * torch.from_numpy(nm_distribution))
 
     if nm_init == "rand":
         print("Last layer weights are initialized to normal random")
@@ -260,50 +263,10 @@ def fit(model, ts, vs, es=None, **kwargs):
     if es is not None:
         logger.info('Reloading best checkpoint')
         model = torch.load(model_file)
+        print(model.output.noiselayer.weight.detach().cpu().numpy())
+        print(model)
+        # TO-DO Get the standard model output via deleting the last layer.
+        # del list(model.children())[-1][2:]
         trainer = create_trainer(model, **kwargs)
         test_metrics = trainer.test(es, reporting_fns, phase='Test', verbose=verbose, output=output, txts=txts)
     return test_metrics
-
-
-# def _test(self, loader, **kwargs):
-#     print("worked with")
-#     self.model.eval()
-#     total_loss = 0
-#     total_norm = 0
-#     steps = len(loader)
-#     pg = create_progress_bar(steps)
-#     cm = ConfusionMatrix(self.labels)
-#     verbose = kwargs.get("verbose", None)
-#     output = kwargs.get('output')
-#     txts = kwargs.get('txts')
-#     handle = None
-#     line_number = 0
-#     if output is not None and txts is not None:
-#         handle = open(output, "w")
-#
-#     for batch_dict in pg(loader):
-#         example = self._make_input(batch_dict)
-#         ys = example.pop('y')
-#         pred = self.model(example)
-#         loss = self.crit(pred, ys)
-#         if handle is not None:
-#             for p, y in zip(pred, ys):
-#                 handle.write(
-#                     '{}\t{}\t{}\n'.format(" ".join(txts[line_number]), self.model.labels[p], self.model.labels[y]))
-#                 line_number += 1
-#         batchsz = self._get_batchsz(batch_dict)
-#         total_loss += loss.item() * batchsz
-#         total_norm += batchsz
-#         _add_to_cm(cm, ys, pred)
-#
-#     metrics = cm.get_all_metrics()
-#     metrics['avg_loss'] = total_loss / float(total_norm)
-#     verbose_output(verbose, cm)
-#     if handle is not None:
-#         handle.close()
-#
-#     return metrics
-
-#
-# @register_trainer(task='classify', name='noisy-trainer')
-# class ClassifyTrainerPyTorch(EpochReportingTrainer):
