@@ -22,7 +22,7 @@ features:
       transform: baseline.lowercase
     embeddings:
       label: w2v-gn
-train: 
+train:
   epochs: 2
   optim: adadelta
   eta: 1.0
