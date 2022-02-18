@@ -1,0 +1,26 @@
+{
+    "datacache": "~/.bl-data",
+    "reporting_hooks":{
+        "xpctl": {
+            "cred": "~/xpctlcred.json",
+            "module": "reporting_xpctl"
+        }
+    },
+    "hpctl": {
+        "backend": {
+            "type": "mp",
+            "real_gpus": [0]
+        },
+        "logging": {
+            "host": "localhost",
+            "port": 6006
+        },
+        "frontend": {
+            "type": "console",
+            "train": "avg_loss",
+            "dev": "acc",
+            "test": "acc"
+        },
+        "root": "/data/hpctl"
+    }
+}
