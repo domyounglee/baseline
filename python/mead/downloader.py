@@ -86,8 +86,8 @@ def web_downloader(url):
 
     path_to_save = "/tmp/data.dload-{}".format(os.getpid())
     try:
-        #path_to_save, _ = urlretrieve(url, path_to_save, reporthook=_report_hook)
-        path_to_save = '/Users/idomyoung/Downloads/GoogleNews-vectors-negative300.bin.gz'
+        path_to_save, _ = urlretrieve(url, path_to_save, reporthook=_report_hook)
+        #path_to_save = '/Users/idomyoung/Downloads/GoogleNews-vectors-negative300.bin.gz'
         #Context.pg.done()
     except:  # this is too broad but there are too many exceptions to handle separately
         raise RuntimeError("failed to download data from [url]: {} [to]: {}".format(url, path_to_save))

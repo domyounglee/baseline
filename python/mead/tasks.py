@@ -394,6 +394,7 @@ class ClassifierTask(Task):
         embeddings = read_config_file_or_json(embeddings, 'embeddings')
         embeddings_set = index_by_label(embeddings)
         self.dataset = DataDownloader(self.dataset, self.data_download_cache).download()
+
         print_dataset_info(self.dataset)
 
         vocab_sources = [self.dataset['train_file'], self.dataset['valid_file']]

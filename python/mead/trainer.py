@@ -126,6 +126,7 @@ def main():
     logger.info('Task: [{}]'.format(task_name))
     task = mead.Task.get_task_specific(task_name, args.settings)
     task.read_config(config_params, args.datasets, reporting_args=reporting_args)
+    print(args.embeddings)
     task.initialize(args.embeddings)
     task.train(args.checkpoint)
 
