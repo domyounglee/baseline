@@ -165,6 +165,7 @@ class Task(object):
         # Read GPUS from env variables now so that the reader has access
         if self.config_params['model'].get('gpus', -1) == -1:
             self.config_params['model']['gpus'] = len(get_env_gpus())
+        
         self._setup_task(**kwargs)
         self._load_user_modules()
         self.dataset = get_dataset_from_key(self.config_params['dataset'], datasets_set)

@@ -65,10 +65,64 @@ Baseline can be installed as a Python package:
 
     ./install_dev.sh baseline
 
-Currently, xpctl depends on baseline but baseline is not available on PyPI so
-you need to install baseline before you install xpctl:
 
-    ./install_dev.sh xpctl
+
+## ConVat 
+
+### Classification in the presence of label noise.
+
+- Go to `python/mead/config/ag-news-noisylabel.yml` 
+
+Set the model to convat   :
+
+```
+model:
+  model_type: noisyconvat
+train:
+  convat: True
+  nm: False
+```
+
+Set the model to jindal model :
+
+```
+model:
+  model_type: noisyconv
+train:
+  convat: False
+  nm: True
+```
+
+
+To change the batch size :
+
+```
+batchsz: 50
+```
+
+To change the epoch   :
+
+```
+train:
+  epochs : 10
+```
+
+To change the noise level and the noise type ( uni / rand ) :
+
+```
+train:
+  noiselvl: 0.7
+  noisetyp: rand
+```
+
+Run via mead train
+
+- Go to `baseline/python/mead/`
+
+```
+python trainer.py --config ~/baseline/python/mead/config/sst2-noisylabel.json  
+```
+
 
 ## A Note About Versions
 

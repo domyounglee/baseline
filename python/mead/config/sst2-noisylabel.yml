@@ -12,7 +12,7 @@ loader:
   reader_type: default
 unif: 0.25
 model:
-  model_type: noisyconv
+  model_type: noisyconvat
   filtsz: [3,4,5]
   cmotsz: 100
   dropout: 0.5
@@ -26,13 +26,15 @@ features:
       label: w2v-gn
 train:
   convat: True
+  nm: False
+  gpus: 0
   fit_func: train-noisy-model
-  epochs: 2
+  model_base: ./models/sst
+  epochs: 10
   optim: adadelta
   eta: 1.0
   early_stopping_metric: acc
-  nm: True
-  noiselvl: 0.2
+  noiselvl: 0.5
   noisetyp: rand
   nmpenality: 0.01
   nminit: identity

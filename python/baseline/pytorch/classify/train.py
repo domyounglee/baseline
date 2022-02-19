@@ -33,10 +33,9 @@ class ClassifyTrainerPyTorch(EpochReportingTrainer):
         super(ClassifyTrainerPyTorch, self).__init__()
         self.clip = float(kwargs.get('clip', 5))
         self.labels = model.labels
-        self.gpus = int(kwargs.get('gpus', 0))
+        self.gpus = int(kwargs.get('gpus', -1))
         if self.gpus == -1:
             self.gpus = len(os.getenv('CUDA_VISIBLE_DEVICES', os.getenv('NV_GPU', '0')).split(','))
-
         self.optimizer = OptimizerManager(model, **kwargs)
         self.model = model
         if self.gpus > 0:
@@ -53,8 +52,7 @@ class ClassifyTrainerPyTorch(EpochReportingTrainer):
         self.nsteps = kwargs.get('nsteps', six.MAXSIZE)
         self.convat = kwargs.get('convat', False)
         
-        print(self.convat)
-        print('='*1000)
+
 
     def _make_input(self, batch_dict):
         if self.gpus > 1:
@@ -65,7 +63,7 @@ class ClassifyTrainerPyTorch(EpochReportingTrainer):
     def _get_batchsz(batch_dict):
         return len(batch_dict['y'])
     @staticmethod
-    def _vat_loss(model, x,eps=1.0, ip=1,xi=10.0):
+    def _vat_loss(model, x,eps=1.5, ip=1,xi=1e-6):
 
  
 
@@ -101,7 +99,7 @@ class ClassifyTrainerPyTorch(EpochReportingTrainer):
         return lds
 
     @staticmethod
-    def _convat(model, epsilon=1.0, num_iters=1,xi=10.0):
+    def _convat(model, epsilon=1.5, num_iters=1,xi=1e-6):
         """
         logit --> output of the model 
         """
@@ -179,7 +177,8 @@ class ClassifyTrainerPyTorch(EpochReportingTrainer):
             if self.convat:
 
                 pred = self.model(example)
-                vat_loss = self._vat_loss(self.model, self.model.context_vec)
+                #vat_loss = self._vat_loss(self.model, self.model.context_vec)
+                vat_loss = self._convat(self.model)
                 
                 loss = self.crit(pred, y) + vat_loss
 

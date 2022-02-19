@@ -170,13 +170,17 @@ class OptimizerManager(object):
 
     def _init_optimizer(self, model, **kwargs):
         wd = float(kwargs.get('weight_decay', 0))
+        convat = float(kwargs.get('convat', False))
         npenality = float(kwargs.get('nmpenality', 0.0))
         nm = float(kwargs.get('nm', False))
         optim = kwargs.get('optim', 'sgd')
         self.current_lr = kwargs.get('eta', kwargs.get('lr', 1.0))
         self.step = self._step_then_update
+        if convat==True and nm==True:
+            raise Exception(' convat==True and nm==True  cannot  be possible')
         if optim == 'adadelta':
             if not nm:
+
                 logger.info('adadelta(eta=%f, wd=%d)', self.current_lr, wd)
                 self.optimizer = torch.optim.Adadelta(model.parameters(), lr=self.current_lr, weight_decay=wd)
             else:
@@ -185,11 +189,11 @@ class OptimizerManager(object):
                 opt_nm = [
                     {'params': model.embeddings.parameters(), 'weight_decay': 0},
                     {'params': model.parallel_conv.parameters(), 'weight_decay': 0},
-                    {'params': model.output.linear1.parameters(), 'weight_decay': 0}
-                    #,{'params': model.output.noiselayer.parameters(), 'weight_decay': npenality}
+                    {'params': model.output.linear1.parameters(), 'weight_decay': 0},
+                    {'params': model.output.noiselayer.parameters(), 'weight_decay': npenality}
                     ]
                 self.optimizer = torch.optim.Adadelta(opt_nm)
-                
+                                
         elif optim.startswith('adam'):
             beta1 = kwargs.get('beta1', 0.9)
             beta2 = kwargs.get('beta2', 0.999)

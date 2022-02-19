@@ -145,7 +145,7 @@ def inject_label_noise(ts, vs, noise_level, noise_type):
 
     return ts, vs, train_noise.noise_matrix
 
-"""
+
 @register_model(task='classify', name='noisyconv')
 class NoisyConvClassifier(ClassifierModelBase):
 
@@ -169,13 +169,18 @@ class NoisyConvClassifier(ClassifierModelBase):
     def pool(self, btc, lengths):
         embeddings = btc.transpose(1, 2).contiguous()
         return self.parallel_conv(embeddings)
-"""
 
-@register_model(task='classify', name='noisyconv')
-class NoisyConvClassifier(ClassifierModelBase):
+
+    def create_loss(self):
+
+        return nn.NLLLoss()
+ 
+
+@register_model(task='classify', name='noisyconvat')
+class NoisyConvatClassifier(ClassifierModelBase):
 
     def __init__(self):
-        super(NoisyConvClassifier, self).__init__()
+        super(NoisyConvatClassifier, self).__init__()
 
     def init_output(self, input_dim, nc):
         self.output = nn.Sequential(OrderedDict([
@@ -214,8 +219,12 @@ class NoisyConvClassifier(ClassifierModelBase):
     def context_forward(self,context_vec):
 
         return self.output(context_vec)
+
+    def create_loss(self):
+        return nn.CrossEntropyLoss()
+
     
-  
+
 
 @register_training_func(task='classify', name='train-noisy-model')
 def fit(model, ts, vs, es=None, **kwargs):
@@ -248,6 +257,7 @@ def fit(model, ts, vs, es=None, **kwargs):
     noise_type = kwargs.get('noisetyp', 'uni')
     nm_init = kwargs.get('nminit', 'identity')
     nm_scaling = kwargs.get('nmscale', 1)
+    nm = kwargs.get('nm', False)
 
     do_early_stopping = bool(kwargs.get('do_early_stopping', True))
     verbose = kwargs.get('verbose',
@@ -270,21 +280,22 @@ def fit(model, ts, vs, es=None, **kwargs):
     
     if noise_level > 0:
         ts, vs, nm_distribution = inject_label_noise(ts, vs, noise_level, noise_type)
-    """
-    if nm_init == "identity":
-        print("Initialized to identity matrix with scaling: {}".format(nm_scaling))
-        model.output.noiselayer.weight.data.copy_(torch.from_numpy(nm_scaling * np.eye(len(model.labels))))
 
-    elif nm_init == "dist":
-        print("Last layer weights are initialized to input noise distribution")
-        model.output.noiselayer.weight.data.copy_(torch.from_numpy(nm_distribution))
-        # TO-ANALYSE (scaling of nm_distribution intialization)
-        # model.output.noiselayer.weight.data.copy_(nm_scaling * torch.from_numpy(nm_distribution))
+    if nm :
+        if nm_init == "identity":
+            print("Initialized to identity matrix with scaling: {}".format(nm_scaling))
+            model.output.noiselayer.weight.data.copy_(torch.from_numpy(nm_scaling * np.eye(len(model.labels))))
 
-    elif nm_init == "rand":
-        print("Last layer weights are initialized to normal random")
-        model.output.noiselayer.weight.data.copy_(torch.from_numpy(np.random.rand(len(model.labels), len(model.labels))))
-    """
+        elif nm_init == "dist":
+            print("Last layer weights are initialized to input noise distribution")
+            model.output.noiselayer.weight.data.copy_(torch.from_numpy(nm_distribution))
+            # TO-ANALYSE (scaling of nm_distribution intialization)
+            # model.output.noiselayer.weight.data.copy_(nm_scaling * torch.from_numpy(nm_distribution))
+
+        elif nm_init == "rand":
+            print("Last layer weights are initialized to normal random")
+            model.output.noiselayer.weight.data.copy_(torch.from_numpy(np.random.rand(len(model.labels), len(model.labels))))
+
     trainer = create_trainer(model, **kwargs)
     print("Noise model initialization weights: ", list(model.parameters())[-1])
 

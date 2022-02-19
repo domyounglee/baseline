@@ -56,7 +56,9 @@ class ClassifierModelBase(nn.Module, ClassifierModel):
             emb.cuda(device)
 
     def create_loss(self):
-        return nn.CrossEntropyLoss()
+        #return nn.CrossEntropyLoss()
+
+        return nn.NLLLoss()
 
 
     def make_input(self, batch_dict):
