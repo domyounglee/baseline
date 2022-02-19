@@ -1,0 +1,45 @@
+modules:
+  - noisyconv_pyt
+batchsz: 50
+basedir: ag-news-pyt
+preproc:
+  mxlen: 100
+  rev: false
+  clean: true
+backend: pytorch
+dataset: AG
+loader:
+  reader_type: default
+unif: 0.25
+model:
+  model_type: noisyconvat
+  filtsz: [3,4,5]
+  cmotsz: 200
+  dropout: 0.5
+
+features:
+  - name: word
+    vectorizer:
+      type: token1d
+      transform: baseline.lowercase
+    embeddings:
+      label: w2v-gn
+train:
+  convat: True
+  nm: False
+  gpus: 0
+  fit_func: train-noisy-model
+  model_base: ./models/ag-news
+  epochs: 10
+  optim: adadelta
+  eta: 1.0
+  early_stopping_metric: acc
+  noiselvl: 0.7
+  noisetyp: rand
+  nmpenality: 0.1
+  nminit: identity
+  nmscale: 4
+  verbose:
+    console: True
+    file: ag-news-cm.csv
+
