@@ -99,11 +99,11 @@ class ClassifyTrainerPyTorch(EpochReportingTrainer):
         return lds
 
     @staticmethod
-    def _convat(model, epsilon=1.5, num_iters=1,xi=1e-6):
+    def _convat(model, epsilon=1.5, num_iters=1,xi=1e-6,**kwargs):
         """
         logit --> output of the model 
         """
-    
+        gpus = int(kwargs.get('gpus', -1))
         def kl_div_with_logit(p_logit, q_logit):
 
             p = F.softmax(p_logit, dim=1)
@@ -137,7 +137,7 @@ class ClassifyTrainerPyTorch(EpochReportingTrainer):
             #d = 1e-3 *_l2_normalize(mask_by_length(d,input_length))
             d = _l2_normalize(
                 d , xi)
-            if self.gpus>0:
+            if gpus>0:
                 d = Variable(d.cuda(), requires_grad=True)
             else:
                 d = Variable(d, requires_grad=True)
@@ -153,7 +153,7 @@ class ClassifyTrainerPyTorch(EpochReportingTrainer):
         
         #d = _l2_normalize(d)
         d=_l2_normalize(d,epsilon)
-        if self.gpus>0:
+        if gpus>0:
             d = Variable(d.cuda())
         else:
             d = Variable(d)
@@ -186,7 +186,7 @@ class ClassifyTrainerPyTorch(EpochReportingTrainer):
 
                 pred = self.model(example)
                 #vat_loss = self._vat_loss(self.model, self.model.context_vec)
-                vat_loss = self._convat(self.model)
+                vat_loss = self._convat(self.model, **kwargs)
                 
                 loss = self.crit(pred, y) + vat_loss
 
