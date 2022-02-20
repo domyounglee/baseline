@@ -137,7 +137,11 @@ class ClassifyTrainerPyTorch(EpochReportingTrainer):
             #d = 1e-3 *_l2_normalize(mask_by_length(d,input_length))
             d = _l2_normalize(
                 d , xi)
-            d = Variable(d, requires_grad=True)
+            if self.gpus>0:
+                d = Variable(d.cuda(), requires_grad=True)
+            else:
+                d = Variable(d, requires_grad=True)
+
             y_hat = model.context_forward(context_vec.detach() + d)
             #print([x.grad for x in model.output.parameters()])
             delta_kl = kl_div_with_logit(model.logit.detach(), y_hat)
@@ -149,7 +153,11 @@ class ClassifyTrainerPyTorch(EpochReportingTrainer):
         
         #d = _l2_normalize(d)
         d=_l2_normalize(d,epsilon)
-        d = Variable(d)
+        if self.gpus>0:
+            d = Variable(d.cuda())
+        else:
+            d = Variable(d)
+
         #r_adv = eps *d
         # compute lds
         y_hat = model.context_forward(context_vec + d.detach())
