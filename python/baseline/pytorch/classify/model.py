@@ -71,13 +71,13 @@ class ClassifierModelBase(nn.Module, ClassifierModel):
         for key in self.embeddings.keys():
             example_dict[key] = torch.from_numpy(batch_dict[key])
             if self.gpu:
-                example_dict[key] = example_dict[key]
+                example_dict[key] = example_dict[key].cuda()
 
         # Allow us to track a length, which is needed for BLSTMs
         if self.lengths_key is not None:
             example_dict['lengths'] = torch.from_numpy(batch_dict[self.lengths_key])
             if self.gpu:
-                example_dict['lengths'] = example_dict['lengths']
+                example_dict['lengths'] = example_dict['lengths'].cuda()
 
         y = batch_dict.get('y')
         if y is not None:
